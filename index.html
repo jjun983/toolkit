@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>动力配电柜电缆选型计算 · 电气计算工具箱</title>
+<style>
+:root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--bg:#f1f5f9;--card:#fff;--border:#e2e8f0;--text:#1e293b;--text-light:#64748b;--success:#16a34a;--success-bg:#dcfce7;--warning:#d97706;--warning-bg:#fef3c7;--danger:#dc2626;--danger-bg:#fee2e2}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:14px;padding:0}
+h1{font-size:22px;margin-bottom:4px}
+.subtitle{color:var(--text-light);font-size:13px;margin-bottom:20px}
+.site-main{padding:24px 20px 0}
+.container{max-width:1280px;margin:0 auto}
+.card{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:15px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);color:var(--primary-dark);display:flex;align-items:center;gap:8px}
+.card h2::before{content:'';display:inline-block;width:4px;height:16px;background:var(--primary);border-radius:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;color:var(--text-light);font-weight:500}
+.field input,.field select{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;background:#fff;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.field .hint{font-size:11px;color:var(--text-light)}
+button{padding:8px 16px;border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:#f1f5f9;color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:#e2e8f0}
+.btn-danger{background:transparent;color:var(--danger);padding:4px 8px;font-size:13px}
+.btn-danger:hover{background:var(--danger-bg)}
+.btn-sm{padding:5px 10px;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 6px;font-weight:600;color:var(--text-light);font-size:12px;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:6px 6px;border-bottom:1px solid var(--border)}
+td input,td select{width:100%;padding:5px 7px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit;background:#fff}
+td input:focus,td select:focus{outline:none;border-color:var(--primary)}
+.num-cell{text-align:right;font-variant-numeric:tabular-nums}
+td.readonly{color:var(--text-light);text-align:right;font-variant-numeric:tabular-nums}
+.table-actions{margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.summary-box{display:flex;gap:28px;flex-wrap:wrap;margin-top:14px;padding:12px 16px;background:var(--primary-light);border-radius:8px}
+.summary-item{display:flex;flex-direction:column;gap:2px}
+.summary-item .label{font-size:12px;color:var(--text-light)}
+.summary-item .value{font-size:17px;font-weight:700;color:var(--primary-dark);font-variant-numeric:tabular-nums}
+.summary-item .note{font-size:11px;color:var(--text-light)}
+.result-block{border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px}
+.result-block.success{border-color:var(--success);background:var(--success-bg)}
+.result-block.warning{border-color:var(--warning);background:var(--warning-bg)}
+.result-block.danger{border-color:var(--danger);background:var(--danger-bg)}
+.result-block .title{font-weight:700;font-size:14px;margin-bottom:10px}
+.title.success{color:var(--success)}
+.title.warning{color:var(--warning)}
+.title.danger{color:var(--danger)}
+.spec-line{font-family:"SF Mono",Consolas,"Courier New",monospace;font-size:19px;font-weight:700;color:var(--primary-dark);padding:12px 16px;background:#fff;border-radius:6px;border:1px solid var(--border);margin:10px 0;letter-spacing:.5px;word-break:break-all}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 20px;margin-top:10px}
+.detail-item{display:flex;flex-direction:column;gap:1px}
+.detail-item .k{font-size:12px;color:var(--text-light)}
+.detail-item .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.check{font-size:13px;margin-top:6px}
+.check.ok{color:var(--success)}
+.check.fail{color:var(--danger)}
+.error-box{padding:12px 16px;background:var(--danger-bg);color:var(--danger);border-radius:8px;border:1px solid var(--danger);margin-bottom:12px;font-size:13px;display:none}
+.error-box.show{display:block}
+.info-note{font-size:12px;color:var(--text-light);margin-top:10px;padding:8px 12px;background:#f8fafc;border-left:3px solid var(--primary);border-radius:4px}
+.flex-between{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* ==================== 站点外壳：页眉 ==================== */
+.site-header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.header-inner{max-width:1280px;margin:0 auto;padding:0 20px;height:62px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text);flex-shrink:0}
+.brand-icon{width:38px;height:38px;flex-shrink:0;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 3px 8px rgba(37,99,235,.28)}
+.brand-text{display:flex;flex-direction:column;line-height:1.25}
+.brand-name{font-size:15px;font-weight:700;letter-spacing:.2px}
+.brand-sub{font-size:10px;color:var(--text-light);letter-spacing:1.2px;text-transform:uppercase;font-weight:500}
+.main-nav{display:flex;align-items:center;gap:4px;justify-content:flex-end;overflow-x:auto;scrollbar-width:none}
+.main-nav::-webkit-scrollbar{display:none}
+.nav-link{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:13.5px;font-weight:500;color:#475569;text-decoration:none;border-radius:8px;white-space:nowrap;transition:background .15s,color .15s}
+.nav-link:hover{background:#f1f5f9;color:var(--text)}
+.nav-link.active{background:var(--primary-light);color:var(--primary-dark);font-weight:600}
+.nav-link .badge{font-size:10px;padding:1px 5px;border-radius:4px;background:var(--warning-bg);color:var(--warning);font-weight:600}
+.nav-link.disabled{opacity:.45;pointer-events:none}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;color:#475569;padding:6px;border-radius:6px}
+.nav-toggle:hover{background:#f1f5f9}
+
+/* ==================== 站点外壳：页脚 ==================== */
+.site-footer{background:#fff;border-top:1px solid var(--border);margin-top:48px}
+.footer-inner{max-width:1280px;margin:0 auto;padding:32px 20px 24px;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:36px}
+.footer-col h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;letter-spacing:.3px}
+.footer-col p{font-size:12.5px;color:var(--text-light);line-height:1.9}
+.footer-col a{display:block;font-size:12.5px;color:var(--text-light);text-decoration:none;line-height:2.1;transition:color .15s}
+.footer-col a:hover{color:var(--primary)}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.footer-brand .brand-icon{width:32px;height:32px;border-radius:8px}
+.footer-brand .brand-name{font-size:14px}
+.footer-bottom{max-width:1280px;margin:0 auto;padding:16px 20px;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;color:#94a3b8}
+.footer-bottom .dot{color:#cbd5e1;margin:0 6px}
+
+@media (max-width:820px){
+  .brand-sub{display:none}
+  .main-nav{display:none;position:absolute;top:62px;left:0;right:0;flex-direction:column;align-items:stretch;justify-content:flex-start;background:#fff;border-bottom:1px solid var(--border);box-shadow:0 6px 16px rgba(0,0,0,.08);padding:8px;gap:2px}
+  .main-nav.open{display:flex}
+  .nav-link{width:100%;padding:10px 14px}
+  .nav-toggle{display:block}
+  .footer-inner{grid-template-columns:1fr;gap:24px;padding:24px 20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 页眉 ==================== -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M13 2L4.5 13.5H10L9 22l8.5-11.5H12L13 2z"/></svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">电气计算工具箱</span>
+        <span class="brand-sub">Electrical Toolkit</span>
+      </div>
+    </a>
+    <nav class="main-nav" id="mainNav"></nav>
+    <button class="nav-toggle" id="navToggle" aria-label="切换菜单">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ==================== 主体 ==================== -->
+<main class="site-main">
+  <div class="container">
+    <h1>动力配电柜电缆选型计算</h1>
+    <div class="subtitle">YJV-0.6/1kV · 三相五线 · GB 50054 / GB 50217 · 截面范围 1.5～120 mm²</div>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <section class="card">
+      <h2>全局参数</h2>
+      <div class="grid">
+        <div class="field">
+          <label>电缆材质</label>
+          <select id="material">
+            <option value="cu">铜芯（YJV）</option>
+            <option value="al">铝芯（YJLV）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>环境温度（℃）</label>
+          <input type="number" id="temp" value="40" step="1" min="-10" max="60">
+          <span class="hint">基准 40℃，范围 -10～60℃</span>
+        </div>
+        <div class="field">
+          <label>电缆长度（m）</label>
+          <input type="number" id="length" value="50" step="1" min="1">
+        </div>
+        <div class="field">
+          <label>敷设方式</label>
+          <select id="installMethod">
+            <option value="air">空气中敷设</option>
+            <option value="conduit">穿管敷设</option>
+            <option value="tray">桥架敷设（多层）</option>
+            <option value="buried">直埋敷设</option>
+          </select>
+        </div>
+        <div class="field" id="conduitOptions" style="display:none">
+          <label>穿管管材</label>
+          <select id="conduitMat">
+            <option value="metal">金属管（K=1.0）</option>
+            <option value="pvc">PVC 管（K=0.9）</option>
+          </select>
+        </div>
+        <div class="field" id="trayOptions" style="display:none">
+          <label>桥架类型</label>
+          <select id="trayType">
+            <option value="ladder">梯架</option>
+            <option value="tray">托盘</option>
+          </select>
+        </div>
+        <div class="field" id="trayOptions2" style="display:none">
+          <label>叠置层数</label>
+          <select id="trayLayers">
+            <option value="1">1 层</option>
+            <option value="2">2 层</option>
+            <option value="3">3 层</option>
+            <option value="4">4 层</option>
+          </select>
+        </div>
+        <div class="field" id="buriedOptions" style="display:none">
+          <label>土壤条件</label>
+          <select id="soilType">
+            <option value="wet">潮湿土壤（K=1.00）</option>
+            <option value="sand">干燥沙土（K=0.90）</option>
+            <option value="clay">坚硬黏土（K=0.80）</option>
+          </select>
+        </div>
+        <div class="field" id="buriedOptions2" style="display:none">
+          <label>直埋并行净距</label>
+          <select id="parallelSpacing">
+            <option value="100">100 mm（K=0.90）</option>
+            <option value="200">200 mm（K=0.92）</option>
+            <option value="300">300 mm（K=0.93）</option>
+          </select>
+          <span class="hint">仅双缆并联时生效</span>
+        </div>
+        <div class="field" id="airOptions">
+          <label>空气中并行间距</label>
+          <select id="airSpacing">
+            <option value="1d">紧贴 s=d（K=0.90）</option>
+            <option value="2d" selected>s=2d（K=1.00）</option>
+            <option value="3d">s=3d（K=1.00）</option>
+          </select>
+          <span class="hint">仅双缆并联时生效</span>
+        </div>
+        <div class="field">
+          <label>电压降限值</label>
+          <select id="duLimit">
+            <option value="3" selected>3%（配电线路）</option>
+            <option value="5">5%（总压降）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>芯数形式偏好</label>
+          <select id="formPref">
+            <option value="auto" selected>自动</option>
+            <option value="3+2">3+2（N=PE=S/2）</option>
+            <option value="4+1">4+1（N=S，PE=S/2）</option>
+          </select>
+          <span class="hint">相线 ≤16mm² 时两者等价</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>需用系数</h2>
+      <div class="flex-between">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="field" style="min-width:200px;">
+            <label>批量应用需用系数 Kx</label>
+            <input type="number" id="batchKx" value="0.85" step="0.01" min="0.1" max="1.0">
+            <span class="hint">动力 0.70～0.90；照明 0.80～1.00；3 台及以下动力设备可取 1.0</span>
+          </div>
+          <button class="btn-primary btn-sm" onclick="applyBatchKx()">应用到全部</button>
+          <button class="btn-secondary btn-sm" onclick="resetKxByType()">按类型重置</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>负载表</h2>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th style="min-width:110px;">设备名称</th>
+              <th style="width:100px;">功率(kW)</th>
+              <th style="width:110px;">负载类型</th>
+              <th style="width:90px;">相数</th>
+              <th style="width:80px;">cosφ</th>
+              <th style="width:80px;">Kx</th>
+              <th style="width:100px;text-align:right;">额定电流(A)</th>
+              <th style="width:110px;text-align:right;">计算电流(A)</th>
+              <th style="width:50px;"></th>
+            </tr>
+          </thead>
+          <tbody id="loadTbody"></tbody>
+        </table>
+      </div>
+      <div class="table-actions">
+        <button class="btn-primary" onclick="addLoad()">+ 添加负载</button>
+        <span style="font-size:12px;color:var(--text-light);">单相负载按三相对称平衡等效计入汇总</span>
+      </div>
+      <div class="summary-box">
+        <div class="summary-item">
+          <span class="label">总装机功率</span>
+          <span class="value" id="sumPower">0.0 kW</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">总额定电流（算术和）</span>
+          <span class="value" id="sumRated">0.0 A</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">计算总电流（已乘 Kx，三相等效）</span>
+          <span class="value" id="sumCalc">0.0 A</span>
+          <span class="note" id="sumNote"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>计算结果</h2>
+      <div id="resultArea">
+        <div class="info-note">请添加负载后查看计算结果。</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ==================== 页脚 ==================== -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M13 2L4.5 13.5H10L9 22l8.5-11.5H12L13 2z"/></svg>
+        </div>
+        <span class="brand-name">电气计算工具箱</span>
+      </div>
+      <p>面向低压配电设计与施工的在线计算工具集。<br>计算依据现行国家标准，结果仅供工程参考。</p>
+    </div>
+    <div class="footer-col">
+      <h4>计算工具</h4>
+      <div id="footerTools"></div>
+    </div>
+    <div class="footer-col">
+      <h4>技术依据</h4>
+      <p>
+        GB 50054 低压配电设计规范<br>
+        GB 50217 电力工程电缆设计标准<br>
+        GB/T 16895 低压电气装置
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> 电气计算工具箱<span class="dot">·</span>仅供工程参考</span>
+    <span>v1.0<span class="dot">·</span>Powered by Cloudflare Pages</span>
+  </div>
+</footer>
+
+<script>
+/* ==================== 数据表 ==================== */
+const STANDARD_SECTIONS = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120];
+const AMPACITY = {
+  air:     [20, 27, 36, 46, 63, 85, 110, 135, 165, 210, 255, 295],
+  conduit: [15, 22, 30, 38, 52, 70,  92, 113, 140, 180, 220, 255],
+  tray:    [18, 25, 33, 42, 58, 78, 102, 125, 155, 200, 245, 285],
+  buried:  [25, 34, 45, 58, 80, 108,140, 170, 210, 265, 320, 370]
+};
+const RESISTANCE_CU = [12.1, 7.41, 4.61, 3.08, 1.83, 1.15, 0.727, 0.524, 0.387, 0.268, 0.193, 0.153];
+const RESISTANCE_AL = [18.1, 11.1, 6.92, 4.62, 2.75, 1.73, 1.09,  0.786, 0.581, 0.402, 0.290, 0.230];
+const LOAD_DEFAULTS = {
+  motor:    { cosPhi: 0.85, kx: 0.85, label: '电动机' },
+  heater:   { cosPhi: 1.00, kx: 0.90, label: '电热/电阻炉' },
+  lighting: { cosPhi: 0.90, kx: 0.90, label: '照明' },
+  mixed:    { cosPhi: 0.85, kx: 0.85, label: '混合负载' },
+  other:    { cosPhi: 0.85, kx: 0.85, label: '其他' }
+};
+const SOIL_FACTOR     = { wet: 1.00, sand: 0.90, clay: 0.80 };
+const BURIED_PARALLEL = { '100': 0.90, '200': 0.92, '300': 0.93 };
+const AIR_PARALLEL    = { '1d': 0.90, '2d': 1.00, '3d': 1.00 };
+const TRAY_FACTOR = {
+  ladder: { 1: 0.80, 2: 0.65, 3: 0.55, 4: 0.50 },
+  tray:   { 1: 0.70, 2: 0.55, 3: 0.50, 4: 0.45 }
+};
+const CONDUIT_MATERIAL = { metal: 1.0, pvc: 0.9 };
+const PARALLEL_EFFICIENCY = 0.90;
+const NEUTRAL_PE_MAP = { 25: 16, 35: 16, 50: 25, 70: 35, 95: 50, 120: 70 };
+
+/* ==================== 站点外壳配置 ==================== */
+const SITE_CONFIG = {
+  tools: [
+    { id: 'cable', name: '电缆选型', path: '/', icon: '⚡' }
+    // 新增工具时在此追加一行，例如：
+    // { id: 'lighting', name: '照明回路', path: '/lighting/', icon: '💡' },
+    // { id: 'breaker',  name: '断路器选型', path: '/breaker/', icon: '🔌', badge: '新' }
+  ]
+};
+
+/* ==================== 状态 ==================== */
+let loads = [];
+let loadSeq = 0;
+
+/* ==================== 工具 ==================== */
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($(id).value);
+const val = id => $(id).value;
+const fmt = (x, d=1) => (isFinite(x) ? x.toFixed(d) : '—');
+
+function tempFactor(t) {
+  const v = (90 - t) / (90 - 40);
+  return v <= 0 ? 0 : Math.sqrt(v);
+}
+function upStandard(x) {
+  for (const s of STANDARD_SECTIONS) if (s >= x - 1e-9) return s;
+  return STANDARD_SECTIONS[STANDARD_SECTIONS.length - 1];
+}
+function getNeutralPE(S, form) {
+  if (S <= 16) return { N: S, PE: S };
+  const half = NEUTRAL_PE_MAP[S] || upStandard(S / 2);
+  if (form === '3+2') return { N: half, PE: half };
+  return { N: S, PE: half };
+}
+function specString(S, N, PE, material) {
+  const prefix = material === 'cu' ? 'YJV' : 'YJLV';
+  let core;
+  if (S <= 16) core = '5×' + S;
+  else if (N === S) core = '4×' + S + ' + 1×' + PE;
+  else core = '3×' + S + ' + 2×' + N;
+  return prefix + '-0.6/1kV ' + core;
+}
+function calcKlay(method, count, opts) {
+  const { trayType, trayLayers, parallelSpacing, airSpacing } = opts;
+  if (method === 'tray') {
+    const t = TRAY_FACTOR[trayType] || TRAY_FACTOR.ladder;
+    return t[trayLayers] !== undefined ? t[trayLayers] : 0.5;
+  }
+  if (method === 'buried') return count === 1 ? 1.0 : (BURIED_PARALLEL[parallelSpacing] || 0.90);
+  if (method === 'air')    return count === 1 ? 1.0 : (AIR_PARALLEL[airSpacing] || 1.0);
+  return 1.0;
+}
+
+/* ==================== 负载表 ==================== */
+function addLoad() {
+  loadSeq++;
+  loads.push({
+    id: 'L' + Date.now() + '_' + loadSeq,
+    name: '负载' + loadSeq,
+    powerKw: '',
+    loadType: 'motor',
+    phase: 'three',
+    cosPhi: 0.85,
+    kx: 0.85
+  });
+  renderLoadTable();
+  calculate();
+}
+function removeLoad(id) {
+  loads = loads.filter(l => l.id !== id);
+  renderLoadTable();
+  calculate();
+}
+function escapeAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+function renderLoadTable() {
+  const tbody = $('loadTbody');
+  tbody.innerHTML = '';
+  if (loads.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-light);padding:20px;">暂无负载，点击“添加负载”开始</td></tr>';
+    return;
+  }
+  loads.forEach((l, idx) => {
+    const tr = document.createElement('tr');
+    const c = getRowCurrent(l);
+    tr.innerHTML =
+      '<td style="color:var(--text-light);">' + (idx + 1) + '</td>' +
+      '<td><input type="text" data-id="' + l.id + '" data-field="name" value="' + escapeAttr(l.name) + '"></td>' +
+      '<td><input type="number" class="num-cell" data-id="' + l.id + '" data-field="powerKw" value="' + (l.powerKw === '' ? '' : l.powerKw) + '" step="0.1" min="0" placeholder="0"></td>' +
+      '<td><select data-id="' + l.id + '" data-field="loadType">' +
+        Object.keys(LOAD_DEFAULTS).map(k => '<option value="' + k + '"' + (l.loadType === k ? ' selected' : '') + '>' + LOAD_DEFAULTS[k].label + '</option>').join('') +
+      '</select></td>' +
+      '<td><select data-id="' + l.id + '" data-field="phase">' +
+        '<option value="three"' + (l.phase === 'three' ? ' selected' : '') + '>三相</option>' +
+        '<option value="single"' + (l.phase === 'single' ? ' selected' : '') + '>单相</option>' +
+      '</select></td>' +
+      '<td><input type="number" class="num-cell" data-id="' + l.id + '" data-field="cosPhi" value="' + l.cosPhi + '" step="0.01" min="0.1" max="1"></td>' +
+      '<td><input type="number" class="num-cell" data-id="' + l.id + '" data-field="kx" value="' + l.kx + '" step="0.01" min="0.1" max="1"></td>' +
+      '<td class="readonly" data-rated="' + l.id + '">' + fmt(c.rated) + '</td>' +
+      '<td class="readonly" data-calc="' + l.id + '">' + fmt(c.calc) + '</td>' +
+      '<td><button class="btn-danger" data-remove="' + l.id + '">✕</button></td>';
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', onLoadFieldChange);
+    el.addEventListener('change', onLoadFieldChange);
+  });
+  tbody.querySelectorAll('[data-remove]').forEach(el => {
+    el.addEventListener('click', () => removeLoad(el.dataset.remove));
+  });
+}
+function onLoadFieldChange(e) {
+  const id = e.target.dataset.id;
+  const field = e.target.dataset.field;
+  if (!id || !field) return;
+  const l = loads.find(x => x.id === id);
+  if (!l) return;
+  if (field === 'powerKw' || field === 'cosPhi' || field === 'kx') {
+    l[field] = e.target.value === '' ? '' : parseFloat(e.target.value);
+  } else if (field === 'name') {
+    l.name = e.target.value;
+  } else if (field === 'loadType') {
+    l.loadType = e.target.value;
+    const def = LOAD_DEFAULTS[l.loadType];
+    if (def) {
+      l.cosPhi = def.cosPhi;
+      l.kx = def.kx;
+      const row = e.target.closest('tr');
+      row.querySelector('[data-field="cosPhi"]').value = def.cosPhi;
+      row.querySelector('[data-field="kx"]').value = def.kx;
+    }
+  } else if (field === 'phase') {
+    l.phase = e.target.value;
+  }
+  updateRowCurrents();
+  calculate();
+}
+function updateRowCurrents() {
+  loads.forEach(l => {
+    const c = getRowCurrent(l);
+    const rEl = document.querySelector('[data-rated="' + l.id + '"]');
+    const cEl = document.querySelector('[data-calc="' + l.id + '"]');
+    if (rEl) rEl.textContent = fmt(c.rated);
+    if (cEl) cEl.textContent = fmt(c.calc);
+  });
+}
+function getRowCurrent(l) {
+  if (!l.powerKw || l.powerKw <= 0) return { rated: 0, calc: 0 };
+  const cos = l.cosPhi && l.cosPhi > 0 ? l.cosPhi : 0.85;
+  const kx  = l.kx && l.kx > 0 ? l.kx : 0.85;
+  const rated = l.phase === 'three'
+    ? l.powerKw * 1000 / (Math.sqrt(3) * 380 * cos)
+    : l.powerKw * 1000 / (220 * cos);
+  return { rated, calc: rated * kx };
+}
+function calcTotals() {
+  let total = 0, ratedSum = 0, totalP = 0, hasSingle = false;
+  for (const l of loads) {
+    if (!l.powerKw || l.powerKw <= 0) continue;
+    const cos = l.cosPhi && l.cosPhi > 0 ? l.cosPhi : 0.85;
+    const kx  = l.kx && l.kx > 0 ? l.kx : 0.85;
+    totalP += l.powerKw;
+    if (l.phase === 'three') {
+      const rated = l.powerKw * 1000 / (Math.sqrt(3) * 380 * cos);
+      ratedSum += rated;
+      total += rated * kx;
+    } else {
+      hasSingle = true;
+      ratedSum += l.powerKw * 1000 / (220 * cos);
+      total += l.powerKw * 1000 * kx / (Math.sqrt(3) * 380 * cos);
+    }
+  }
+  return { total, ratedSum, totalP, hasSingle };
+}
+
+/* ==================== 需用系数 ==================== */
+function applyBatchKx() {
+  const kx = parseFloat($('batchKx').value);
+  if (isNaN(kx) || kx < 0.1 || kx > 1.0) {
+    showError('需用系数应在 0.10～1.00 之间');
+    return;
+  }
+  loads.forEach(l => l.kx = kx);
+  renderLoadTable();
+  calculate();
+}
+function resetKxByType() {
+  loads.forEach(l => {
+    const def = LOAD_DEFAULTS[l.loadType];
+    if (def) l.kx = def.kx;
+  });
+  renderLoadTable();
+  calculate();
+}
+function showError(msg) {
+  const el = $('errorBox');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+/* ==================== 核心选缆 ==================== */
+function tryCables(count, opts) {
+  const { installMethod, Ktheta, Ks, Kconduit, matFactor, I, length, duLimit, material } = opts;
+  const R_TABLE = material === 'cu' ? RESISTANCE_CU : RESISTANCE_AL;
+  for (let i = 0; i < STANDARD_SECTIONS.length; i++) {
+    const S = STANDARD_SECTIONS[i];
+    const IzBase = AMPACITY[installMethod][i] * matFactor;
+    const Klay = calcKlay(installMethod, count, opts);
+    const IzAllow = IzBase * Ktheta * Ks * Klay * Kconduit;
+    const IzTotal = count === 1 ? IzAllow : 2 * IzAllow * PARALLEL_EFFICIENCY;
+    const R = R_TABLE[i];
+    const dU = Math.sqrt(3) * (I / count) * (length / 1000) * R / 380 * 100;
+    if (IzTotal >= I - 1e-9 && dU <= duLimit + 1e-9) {
+      return {
+        S: S, index: i,
+        IzBase: IzBase, Klay: Klay, IzAllow: IzAllow, IzTotal: IzTotal,
+        R: R, dU: dU,
+        loadRate: I / IzTotal
+      };
+    }
+  }
+  return null;
+}
+function calculate() {
+  const material      = val('material');
+  const temp          = num('temp');
+  const length        = num('length');
+  const installMethod = val('installMethod');
+  const duLimit       = num('duLimit');
+  const formPref      = val('formPref');
+  const conduitMat    = val('conduitMat');
+  const trayType      = val('trayType');
+  const trayLayers    = parseInt(val('trayLayers'), 10);
+  const soilType      = val('soilType');
+  const parallelSpacing = val('parallelSpacing');
+  const airSpacing    = val('airSpacing');
+
+  const totals = calcTotals();
+  const I = totals.total;
+
+  $('sumPower').textContent = fmt(totals.totalP) + ' kW';
+  $('sumRated').textContent = fmt(totals.ratedSum) + ' A';
+  $('sumCalc').textContent  = fmt(I) + ' A';
+  $('sumNote').textContent  = totals.hasSingle ? '（含单相负载，按三相对称等效）' : '';
+
+  if (loads.length === 0 || I <= 0) {
+    $('resultArea').innerHTML = '<div class="info-note">请添加有效负载（功率 > 0）后查看计算结果。</div>';
+    return;
+  }
+  if (isNaN(temp) || temp < -10 || temp > 60) {
+    $('resultArea').innerHTML = '<div class="info-note">环境温度应在 -10～60℃ 之间。</div>';
+    return;
+  }
+  if (isNaN(length) || length <= 0) {
+    $('resultArea').innerHTML = '<div class="info-note">电缆长度应大于 0。</div>';
+    return;
+  }
+
+  let form = formPref;
+  if (form === 'auto') {
+    form = loads.some(l => l.phase === 'single' || l.loadType === 'lighting') ? '4+1' : '3+2';
+  }
+
+  const Ktheta    = tempFactor(temp);
+  const Ks        = installMethod === 'buried' ? SOIL_FACTOR[soilType] : 1.0;
+  const Kconduit  = installMethod === 'conduit' ? CONDUIT_MATERIAL[conduitMat] : 1.0;
+  const matFactor = material === 'al' ? 0.77 : 1.0;
+
+  const common = {
+    installMethod: installMethod,
+    Ktheta: Ktheta, Ks: Ks, Kconduit: Kconduit, matFactor: matFactor,
+    I: I, length: length, duLimit: duLimit, material: material,
+    trayType: trayType, trayLayers: trayLayers,
+    parallelSpacing: parallelSpacing, airSpacing: airSpacing
+  };
+
+  const single = tryCables(1, common);
+  const double = single ? null : tryCables(2, common);
+
+  let singleFail = null;
+  if (!single) {
+    const idx = STANDARD_SECTIONS.length - 1;
+    const S = STANDARD_SECTIONS[idx];
+    const IzBase = AMPACITY[installMethod][idx] * matFactor;
+    const Klay = calcKlay(installMethod, 1, common);
+    const IzMax = IzBase * Ktheta * Ks * Klay * Kconduit;
+    const R = (material === 'cu' ? RESISTANCE_CU : RESISTANCE_AL)[idx];
+    const dUMax = Math.sqrt(3) * I * (length / 1000) * R / 380 * 100;
+    singleFail = { S: S, IzMax: IzMax, dUMax: dUMax };
+  }
+
+  renderResult({
+    totals: totals, I: I, form: form,
+    Ktheta: Ktheta, Ks: Ks, Kconduit: Kconduit, matFactor: matFactor,
+    temp: temp, length: length, installMethod: installMethod, duLimit: duLimit,
+    single: single, double: double, material: material, singleFail: singleFail
+  });
+}
+function renderResult(r) {
+  let html = '';
+  html += '<div class="detail-grid" style="margin-bottom:14px;">';
+  html += '<div class="detail-item"><span class="k">计算总电流</span><span class="v">' + fmt(r.I) + ' A</span></div>';
+  html += '<div class="detail-item"><span class="k">温度校正 Kθ</span><span class="v">' + r.Ktheta.toFixed(3) + '</span></div>';
+  if (r.installMethod === 'buried') {
+    html += '<div class="detail-item"><span class="k">土壤校正 Ks</span><span class="v">' + r.Ks.toFixed(2) + '</span></div>';
+  }
+  if (r.installMethod === 'conduit') {
+    html += '<div class="detail-item"><span class="k">管材校正</span><span class="v">' + r.Kconduit.toFixed(2) + '</span></div>';
+  }
+  if (r.material === 'al') {
+    html += '<div class="detail-item"><span class="k">铝芯系数</span><span class="v">' + r.matFactor + '</span></div>';
+  }
+  html += '<div class="detail-item"><span class="k">芯数形式</span><span class="v">' + r.form + '</span></div>';
+  html += '</div>';
+
+  if (r.single) {
+    const s = r.single;
+    const np = getNeutralPE(s.S, r.form);
+    const spec = specString(s.S, np.N, np.PE, r.material);
+    html += '<div class="result-block success">';
+    html += '<div class="title success">✓ 单缆方案可行</div>';
+    html += '<div class="spec-line">' + spec + '</div>';
+    html += '<div class="detail-grid">';
+    html += '<div class="detail-item"><span class="k">相线截面</span><span class="v">' + s.S + ' mm²</span></div>';
+    html += '<div class="detail-item"><span class="k">N 线 / PE 线</span><span class="v">' + np.N + ' / ' + np.PE + ' mm²</span></div>';
+    html += '<div class="detail-item"><span class="k">基准载流量</span><span class="v">' + fmt(s.IzBase) + ' A</span></div>';
+    html += '<div class="detail-item"><span class="k">其他校正系数</span><span class="v">' + s.Klay.toFixed(2) + '</span></div>';
+    html += '<div class="detail-item"><span class="k">校正后载流量</span><span class="v">' + fmt(s.IzTotal) + ' A</span></div>';
+    html += '<div class="detail-item"><span class="k">负载率</span><span class="v">' + (s.loadRate * 100).toFixed(1) + '%</span></div>';
+    html += '<div class="detail-item"><span class="k">电压降</span><span class="v">' + s.dU.toFixed(2) + '%</span></div>';
+    html += '</div>';
+    html += '<div class="check ok">载流量校验通过：' + fmt(s.IzTotal) + ' A ≥ ' + fmt(r.I) + ' A</div>';
+    html += '<div class="check ok">电压降校验通过：' + s.dU.toFixed(2) + '% ≤ ' + r.duLimit + '%</div>';
+    html += '</div>';
+  } else if (r.double) {
+    const d = r.double;
+    const np = getNeutralPE(d.S, r.form);
+    const per = specString(d.S, np.N, np.PE, r.material);
+    html += '<div class="result-block warning">';
+    html += '<div class="title warning">⚠ 单缆 120 mm² 不满足，采用双缆并联</div>';
+    html += '<div class="spec-line">2 × (' + per + ')</div>';
+    html += '<div class="detail-grid">';
+    html += '<div class="detail-item"><span class="k">每根相线截面</span><span class="v">' + d.S + ' mm²</span></div>';
+    html += '<div class="detail-item"><span class="k">每根 N / PE</span><span class="v">' + np.N + ' / ' + np.PE + ' mm²</span></div>';
+    html += '<div class="detail-item"><span class="k">每根基准载流量</span><span class="v">' + fmt(d.IzBase) + ' A</span></div>';
+    html += '<div class="detail-item"><span class="k">其他校正系数</span><span class="v">' + d.Klay.toFixed(2) + '</span></div>';
+    html += '<div class="detail-item"><span class="k">每根校正后载流量</span><span class="v">' + fmt(d.IzAllow) + ' A</span></div>';
+    html += '<div class="detail-item"><span class="k">并联总载流量</span><span class="v">' + fmt(d.IzTotal) + ' A</span></div>';
+    html += '<div class="detail-item"><span class="k">负载率</span><span class="v">' + (d.loadRate * 100).toFixed(1) + '%</span></div>';
+    html += '<div class="detail-item"><span class="k">并联后电压降</span><span class="v">' + d.dU.toFixed(2) + '%</span></div>';
+    html += '</div>';
+    html += '<div class="check ok">载流量校验：2 × ' + fmt(d.IzAllow) + ' × 0.90 = ' + fmt(d.IzTotal) + ' A ≥ ' + fmt(r.I) + ' A</div>';
+    html += '<div class="check ok">电压降校验：' + d.dU.toFixed(2) + '% ≤ ' + r.duLimit + '%</div>';
+    html += '</div>';
+  } else {
+    html += '<div class="result-block danger">';
+    html += '<div class="title danger">✗ 超出计算能力</div>';
+    html += '<div class="check fail">在 1.5～120 mm² 单缆及双缆并联下均无法满足要求。</div>';
+    if (r.singleFail) {
+      html += '<div class="check fail">单缆 120 mm² 最大校正载流量约 ' + fmt(r.singleFail.IzMax) + ' A（需求 ' + fmt(r.I) + ' A），电压降约 ' + r.singleFail.dUMax.toFixed(2) + '%（限值 ' + r.duLimit + '%）。</div>';
+    }
+    html += '<div class="info-note">建议：缩短电缆长度、调整负载分配、提高电压等级或采用更多并联电缆（需另行校验并联降容）。</div>';
+    html += '</div>';
+  }
+  $('resultArea').innerHTML = html;
+}
+
+/* ==================== 敷设方式联动 ==================== */
+function updateInstallOptions() {
+  const m = val('installMethod');
+  $('conduitOptions').style.display = m === 'conduit' ? '' : 'none';
+  $('trayOptions').style.display    = m === 'tray' ? '' : 'none';
+  $('trayOptions2').style.display   = m === 'tray' ? '' : 'none';
+  $('buriedOptions').style.display  = m === 'buried' ? '' : 'none';
+  $('buriedOptions2').style.display = m === 'buried' ? '' : 'none';
+  $('airOptions').style.display     = m === 'air' ? '' : 'none';
+}
+
+/* ==================== 站点外壳：导航渲染 ==================== */
+function normalizePath(p) {
+  if (!p || p === '/index.html') return '/';
+  p = p.replace(/\/index\.html$/, '/');
+  if (!p.startsWith('/')) p = '/' + p;
+  if (!p.endsWith('/')) p += '/';
+  return p;
+}
+function renderShell() {
+  const currentPath = normalizePath(window.location.pathname);
+  const nav = $('mainNav');
+  const footerTools = $('footerTools');
+  if (!nav) return;
+  nav.innerHTML = '';
+  if (footerTools) footerTools.innerHTML = '';
+
+  SITE_CONFIG.tools.forEach(t => {
+    const isActive = normalizePath(t.path) === currentPath;
+    const a = document.createElement('a');
+    a.className = 'nav-link' + (isActive ? ' active' : '') + (t.disabled ? ' disabled' : '');
+    a.href = t.path;
+    a.innerHTML = (t.icon ? '<span>' + t.icon + '</span>' : '') +
+                  '<span>' + t.name + '</span>' +
+                  (t.badge ? '<span class="badge">' + t.badge + '</span>' : '');
+    nav.appendChild(a);
+
+    if (footerTools) {
+      const f = document.createElement('a');
+      f.href = t.path;
+      f.textContent = t.name;
+      footerTools.appendChild(f);
+    }
+  });
+
+  const y = $('year');
+  if (y) y.textContent = new Date().getFullYear();
+}
+function initNavToggle() {
+  const toggle = $('navToggle');
+  const nav = $('mainNav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', e => {
+    e.stopPropagation();
+    nav.classList.toggle('open');
+  });
+  document.addEventListener('click', e => {
+    if (!nav.contains(e.target) && !toggle.contains(e.target)) nav.classList.remove('open');
+  });
+}
+
+/* ==================== 初始化 ==================== */
+function init() {
+  ['material', 'temp', 'length', 'installMethod', 'conduitMat', 'trayType',
+   'trayLayers', 'soilType', 'parallelSpacing', 'airSpacing', 'duLimit', 'formPref'].forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    const handler = () => {
+      if (id === 'installMethod') updateInstallOptions();
+      calculate();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+
+  updateInstallOptions();
+
+  loadSeq++;
+  loads.push({
+    id: 'L_init_' + loadSeq,
+    name: '负载1',
+    powerKw: 30,
+    loadType: 'motor',
+    phase: 'three',
+    cosPhi: 0.85,
+    kx: 0.85
+  });
+  renderLoadTable();
+  calculate();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  renderShell();
+  initNavToggle();
+});
+</script>
+</body>
+</html>
